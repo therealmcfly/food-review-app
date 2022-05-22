@@ -8,6 +8,7 @@ function App() {
   const [nextCursor, setNextCursor] = useState(0);
   const nextCursorRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
+  const errorRef = useRef();
 
   const handleOrderClick = (e) => {
     setNextCursor(0);
@@ -25,10 +26,10 @@ function App() {
     let result;
     try {
       setIsLoading(true);
+      errorRef.current = null;
       result = await getFoodList(orderBy, cursor);
     } catch (error) {
-      alert(error);
-      console.error(error);
+      errorRef.current = error;
     } finally {
       setIsLoading(false);
       const { foods, paging } = await result;
@@ -68,6 +69,7 @@ function App() {
           Load More
         </button>
       )}
+      {errorRef.current && <div>{errorRef.current.message}</div>}
     </div>
   );
 }
