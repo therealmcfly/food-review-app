@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { getFoodList } from "./api";
 import FoodList from "./components/FoodList/FoodList";
+import SearchBox from "./components/SearchBox/SearchBox";
 
 function App() {
-  const [listOfFood, setListOfFood] = useState([]);
+  const [listOfFoods, setListOfFoods] = useState([]);
   const [orderState, setOrder] = useState("");
   const [nextCursor, setNextCursor] = useState(0);
   const nextCursorRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
-  const errorRef = useRef();
+  const responseStatusRef = useRef();
 
   const handleOrderClick = (e) => {
     setNextCursor(0);
@@ -16,30 +17,32 @@ function App() {
   };
 
   const handleDelete = (id) => {
-    setListOfFood((prevList) => {
+    setListOfFoods((prevList) => {
       const filteredList = prevList.filter((item) => item.id !== id);
       return filteredList;
     });
   };
 
-  const loadFoodList = async (orderBy, cursor) => {
+  const loadFoodList = async (orderBy, cursor, searchValue) => {
     let result;
     try {
       setIsLoading(true);
-      errorRef.current = null;
-      result = await getFoodList(orderBy, cursor);
+      responseStatusRef.current = null;
+      result = await getFoodList(orderBy, cursor, searchValue);
     } catch (error) {
-      errorRef.current = error;
+      responseStatusRef.current = error;
     } finally {
       setIsLoading(false);
       const { foods, paging } = await result;
-      setListOfFood((prevList) => {
-        if (nextCursor) {
+      setListOfFoods((prevList) => {
+        if (nextCursor && !searchValue) {
           nextCursorRef.current = paging.nextCursor;
           const list = [...prevList, ...foods];
           return list;
         } else {
           nextCursorRef.current = paging.nextCursor;
+          responseStatusRef.current =
+            foods.length === 0 ? "Not Available" : null;
           return foods;
         }
       });
@@ -47,8 +50,11 @@ function App() {
   };
 
   const handleLoadMore = () => {
-    console.log(nextCursorRef.current);
     setNextCursor(() => nextCursorRef.current);
+  };
+
+  const handleSearchSubmit = (searchValue) => {
+    loadFoodList(null, null, searchValue);
   };
 
   useEffect(() => {
@@ -63,13 +69,18 @@ function App() {
       <button name="calorie" onClick={handleOrderClick}>
         By Calories
       </button>
-      <FoodList items={listOfFood} onDelete={handleDelete} />
+      <SearchBox onClick={handleSearchSubmit} />
+      <FoodList items={listOfFoods} onDelete={handleDelete} />
       {nextCursorRef.current && (
         <button disabled={isLoading} onClick={handleLoadMore}>
           Load More
         </button>
       )}
-      {errorRef.current && <div>{errorRef.current.message}</div>}
+      {responseStatusRef.current && (
+        <div>
+          {responseStatusRef.current.message || responseStatusRef.current}
+        </div>
+      )}
     </div>
   );
 }
