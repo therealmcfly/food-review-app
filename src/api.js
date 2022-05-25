@@ -12,3 +12,14 @@ export async function getFoodList(order, nextCursor, searchValue = "") {
   const result = await response.json();
   return result;
 }
+export async function addFood(formData) {
+  const response = await fetch(`${URL}`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error("failed to add food to list");
+  }
+  const result = await response.json();
+  return result;
+}

@@ -1,18 +1,9 @@
-import { useState } from "react";
-
-function SearchBox({ onClick }) {
-  const [searchInputValue, setSearchInputValue] = useState("");
-
-  function handleChange(e) {
-    const inputValue = e.target.value;
-    setSearchInputValue(inputValue);
-  }
-
-  const handleOnClick = () => onClick(searchInputValue);
+function SearchBox({ onClick, onChange, value }) {
+  const handleOnClick = () => onClick(value);
 
   return (
     <>
-      <input type="text" value={searchInputValue} onChange={handleChange} />
+      <input type="search" value={value} onChange={onChange} />
       <button onClick={handleOnClick}>search</button>
     </>
   );

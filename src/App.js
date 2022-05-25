@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { getFoodList } from "./api";
+import { addFood, getFoodList } from "./api";
 import FoodList from "./components/FoodList/FoodList";
+import FoodInputForm from "./components/FoodInputForm/FoodInputForm";
 import SearchBox from "./components/SearchBox/SearchBox";
 
 function App() {
@@ -10,6 +11,8 @@ function App() {
   const nextCursorRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const responseStatusRef = useRef();
+
+  const [searchInputValue, setSearchInputValue] = useState("");
 
   const handleOrderClick = (e) => {
     setNextCursor(0);
@@ -53,8 +56,20 @@ function App() {
     setNextCursor(() => nextCursorRef.current);
   };
 
+  const handleChange = (e) => {
+    const inputValue = e.target.value;
+    setSearchInputValue(inputValue);
+  };
+
   const handleSearchSubmit = (searchValue) => {
     loadFoodList(null, null, searchValue);
+  };
+
+  const handleAddFoodSubmitSuccess = (addedFood) => {
+    setListOfFoods((prevList) => {
+      const newFoodAddedList = [addedFood, ...prevList];
+      return newFoodAddedList;
+    });
   };
 
   useEffect(() => {
@@ -69,7 +84,15 @@ function App() {
       <button name="calorie" onClick={handleOrderClick}>
         By Calories
       </button>
-      <SearchBox onClick={handleSearchSubmit} />
+      <SearchBox
+        onClick={handleSearchSubmit}
+        onChange={handleChange}
+        value={searchInputValue}
+      />
+      <FoodInputForm
+        onSubmit={addFood}
+        onSubmitSuccess={handleAddFoodSubmitSuccess}
+      />
       <FoodList items={listOfFoods} onDelete={handleDelete} />
       {nextCursorRef.current && (
         <button disabled={isLoading} onClick={handleLoadMore}>
