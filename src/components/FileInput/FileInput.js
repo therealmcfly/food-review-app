@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function FileInput({ name, value, onChange }) {
   const [previewUrl, setPreviewUrl] = useState();
+  const fileInputRef = useRef();
 
   const handleChange = (e) => {
     const imgFile = e.target.files[0];
     onChange(name, imgFile);
+  };
+
+  const clearFileInput = () => {
+    fileInputRef.current.value = null;
+    onChange(name, value);
   };
 
   useEffect(() => {
@@ -14,7 +20,7 @@ export default function FileInput({ name, value, onChange }) {
     setPreviewUrl(objectUrl);
 
     return () => {
-      // setPreviewUrl(preview);
+      setPreviewUrl(null);
       URL.revokeObjectURL(objectUrl);
     };
   }, [value]);
@@ -22,7 +28,8 @@ export default function FileInput({ name, value, onChange }) {
   return (
     <div>
       <img src={previewUrl} alt="preview" width="300px" />
-      <input type="file" onChange={handleChange} />;
+      <input type="file" onChange={handleChange} ref={fileInputRef} />
+      {value && <button onClick={clearFileInput}>X</button>}
     </div>
   );
 }
